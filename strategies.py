@@ -49,3 +49,18 @@ class TwoBit(Strategy):
             last_bit = self.history_bits[1]
             self.history_bits = (last_bit, int(not prediction_value))
 
+        
+class Correlating(Strategy):
+    def __init__(self, tablesize, inner_strategy):
+        super().__init__()
+
+        predictors = enumerate(inner_strategy() for i in range(tablesize))
+        self.table = {i: predictor for (i, predictor) in predictors}
+
+    def prediction(self, shift_register):
+        inner_predictor = self.table[shift_register]
+        return inner_predictor.prediction
+
+    def update(self, shift_register, prediction_correct):
+        inner_predictor = self.table[shift_register]
+        inner_predictor.update(prediction_correct)

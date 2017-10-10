@@ -35,6 +35,26 @@ class Predictor:
         return correct_prediction_count / len(self.execution) * 100
 
 
+class Correlating(Predictor):
+    def __init__(self, strategy, execution, tablesize):
+        super().__init__()
+
+        predictors = enumerate(predictor() for i in range(m))
+        self.table = {i: predictor for (i, predictor) in predictors}
+
+        self.shift_register = 0
+
+    def predict(self, step):
+        predictor = self.table[step.address]
+        prediction = predictor.prediction(self.shift_register)
+
+        prediction_correct = step.branch == prediction
+        predictor.update(prediction_correct):w
+
+        return prediction_correct
+
+    def simulate(self):
+        return super().simulate()
 
 e = [Step(i, Branch.TAKEN) for i in range(10)]
 e.extend([Step(i, Branch.NOT_TAKEN) for i in range(10)])
