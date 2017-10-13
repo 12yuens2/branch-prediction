@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "FFT.h"
+#include "Random.h"
 
 #define PI  3.1415926535897932
 
@@ -163,3 +163,9 @@ void FFT_inverse(int N, double *data)
 }
 
 
+int main(int argc, char* argv[])
+{   
+    int n = atoi(argv[1]);
+    double* x = RandomVector(2*n, new_Random_seed(RANDOM_SEE));
+    
+}

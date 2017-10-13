@@ -1,5 +1,6 @@
 #include "Random.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 /**
  Estimate Pi by approximating the area of a circle.
@@ -33,45 +34,46 @@
 static const int SEED = 113;
 
 
-    double MonteCarlo_num_flops(int Num_samples)
-    {
-        /* 3 flops in x^2+y^2 and 1 flop in random routine */
+double MonteCarlo_num_flops(int Num_samples)
+{
+    /* 3 flops in x^2+y^2 and 1 flop in random routine */
 
-        return ((double) Num_samples)* 4.0;
+    return ((double) Num_samples)* 4.0;
+
+}
+
+
+
+double MonteCarlo_integrate(int Num_samples)
+{
+
+
+    Random R = new_Random_seed(SEED);
+
+
+    int under_curve = 0;
+    int count;
+
+    for (count=0; count<Num_samples; count++)
+    {
+	double x= Random_nextDouble(R);
+	double y= Random_nextDouble(R);
+
+	if ( x*x + y*y <= 1.0) under_curve ++;
 
     }
 
-    
+    Random_delete(R);
 
-    double MonteCarlo_integrate(int Num_samples)
-    {
+    return ((double) under_curve / Num_samples) * 4.0;
+}
 
+int main(int argc, char* argv[])
+{
+    int count = atoi(argv[1]);
 
-        Random R = new_Random_seed(SEED);
-
-
-        int under_curve = 0;
-        int count;
-
-        for (count=0; count<Num_samples; count++)
-        {
-            double x= Random_nextDouble(R);
-            double y= Random_nextDouble(R);
-
-            if ( x*x + y*y <= 1.0)
-                 under_curve ++;
-            
-        }
-
-        Random_delete(R);
-
-        return ((double) under_curve / Num_samples) * 4.0;
-    }
-
-    int main()
-    {
-        printf("Sim: %f\n", MonteCarlo_integrate(10));
-        return 0;
-    }
+    printf("Sim: %f\n", MonteCarlo_integrate(count));
+    return 0;
+}
 
 
