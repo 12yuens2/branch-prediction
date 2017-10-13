@@ -1,4 +1,14 @@
-		SciMark2 (C version)
+Random, FFT, SOR and MonteCarlo are SciMark2 benchmarks.
+Loop, LoopCondition and BubbleSort are my own benchmarks.
+
+Run `make` to build the executables.
+
+Below is the README for SciMark2
+
+=====================================================================
+
+
+SciMark2 (C version)
 
 This is an ANSI C version of the SciMark2 benchmark,
 translated from the original Java sources.  The intent
