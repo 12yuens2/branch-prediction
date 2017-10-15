@@ -48,15 +48,11 @@ void SOR_execute(int M, int N, double omega, double **G, int
 int main(int argc, char* argv[])
 {
     int n = atoi(argv[1]);
-    int cycles = atoi(argv[2]);
     double** g = RandomMatrix(n, n, new_Random_seed(101010));
 
-    for (int i = 1; i < cycles; i *= 2)
-    {
-	SOR_execute(n, n, 1.25, g, i);
-    }
+    SOR_execute(n, n, 1.25, g, 1);
 
-    double result = SOR_num_flops(n, n, cycles);
+    double result = SOR_num_flops(n, n, 1);
     printf("%lf\n", result);
 
     return 0;
