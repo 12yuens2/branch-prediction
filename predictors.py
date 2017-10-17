@@ -59,6 +59,14 @@ class TwoBitCounter():
         self.prediction = Branch.NOT_TAKEN
         self.history_bits = (0, 0)
         
+    def predict_correct(self, step):
+        prediction = self.prediction
+        
+        prediction_correct = prediction == step.branch
+        self.update(prediction_correct)
+        
+        return prediction_correct
+        
     def update(self, prediction_correct):
         self.update_bits(prediction_correct)
         
@@ -86,15 +94,10 @@ class TwoBitPredictor(Predictor):
     def predict_correct(self, step):
         address = self.translate_address(step.address, self.table_bits)
         counter = self.table[address]
-        prediction = counter.prediction
         
-        prediction_correct = prediction == step.branch
-        counter.update(prediction_correct)
-        
-        return prediction_correct
+        return counter.predict_correct(step)
 
 
-    
 class CorrelatingCounter():
     def __init__(self, register_bits):
         self.two_bit_counters = [TwoBitCounter() for i in range(2 ** register_bits)]
@@ -157,14 +160,10 @@ class GsharePredictor(Predictor):
     def predict_correct(self, step):
         address = self.translate_address(step.address, self.table_bits)
         counter = self.get_inner_predictor(address)
-        prediction = counter.prediction
-        
-        prediction_correct = prediction == step.branch
-        counter.update(prediction_correct)
         
         self.update_register(step.branch == Branch.TAKEN)
         
-        return prediction_correct
+        return counter.predict_correct(step)
     
     def get_inner_predictor(self, address):
         index = address ^ self.shift_register
