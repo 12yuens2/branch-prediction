@@ -9,6 +9,10 @@ class Step:
     def __init__(self, address, branch):
         self.address = address
         self.branch = branch
+        
+    def __repr__(self):
+        return "(Address: " + str(self.address) + " , Branch: " + str(self.branch.name) + ")"
+
 
 class Predictor(ABC):
     def __init__(self):
@@ -32,8 +36,6 @@ class Predictor(ABC):
         return correct_prediction_count / len(execution) * 100
 
 
-
-
 ## Predictor implementations ##
 
 class AlwaysTakenPredictor(Predictor):
@@ -43,6 +45,7 @@ class AlwaysTakenPredictor(Predictor):
     def predict_correct(self, step):
         return self.prediction == step.branch
 
+
 class AlwaysNotTakenPredictor(Predictor):
     def __init__(self):
         self.prediction = Branch.NOT_TAKEN
@@ -50,6 +53,7 @@ class AlwaysNotTakenPredictor(Predictor):
     def predict_correct(self, step):
         return self.prediction == step.branch
 
+    
 class TwoBitCounter():
     def __init__(self):
         self.prediction = Branch.NOT_TAKEN
@@ -89,6 +93,8 @@ class TwoBitPredictor(Predictor):
         
         return prediction_correct
 
+
+    
 class CorrelatingCounter():
     def __init__(self, register_bits):
         self.two_bit_counters = [TwoBitCounter() for i in range(2 ** register_bits)]
@@ -131,13 +137,17 @@ class CorrelatingPredictor(Predictor):
         if (branch_taken):
             self.shift_register |= 1 << (self.register_bits - 1)
 
+    def simulate(self, execution):
+        self.__init__(self.table_bits, self.register_bits)
+        return super().simulate(execution)
+
+            
 class GsharePredictor(Predictor):
     def __init__(self, table_bits, register_bits):
         
         # Create a TwoBitCounter for each entry in the table
         counters = enumerate([TwoBitCounter() for i in range(2 ** table_bits)])
         self.table = {address: counter for (address, counter) in counters}
-        print(len(self.table))
         self.table_bits = table_bits
         
         # Initialise shift register
@@ -165,3 +175,7 @@ class GsharePredictor(Predictor):
 
         if (branch_taken):
             self.shift_register |= 1 << (self.register_bits - 1)
+
+    def simulate(self, execution):
+        self.__init__(self.table_bits, self.register_bits)
+        return super().simulate(execution)
