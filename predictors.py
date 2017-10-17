@@ -178,3 +178,46 @@ class GsharePredictor(Predictor):
     def simulate(self, execution):
         self.__init__(self.table_bits, self.register_bits)
         return super().simulate(execution)
+
+    
+class ProfiledPredictor(Predictor):
+    def __init__(self, table_bits):
+        counters = enumerate([TakenCount() for i in range(2 ** table_bits)])
+        self.table = {address: count for address, count in counters}
+        self.table_bits = table_bits
+        
+        self.mask = 2**table_bits - 1
+        self.classifications = {}
+        
+    def predict_correct(self, step):
+        address = self.translate_address(step.address, self.table_bits)
+        strategy = self.table[address]
+        
+        return strategy.predict_correct(step)
+        
+    def get_classifications(self):
+        classifications = {}
+        for address, count in self.table.items():
+            if (count.total_count > 0):
+                percentage_taken = count.taken_count/float(count.total_count)
+                if percentage_taken > 0.95:
+                    classifications[address] = AlwaysTakenPredictor()
+                elif percentage_taken < 0.05:
+                    classifications[address] = AlwaysNotTakenPredictor()
+                else:
+                    classifications[address] = TwoBitCounter()
+                
+        return classifications
+    
+    def simulate(self, execution):
+        self.__init__(self.table_bits)
+        
+        for step in execution: 
+            address = int(step.address) & self.mask
+            if (step.branch == Branch.TAKEN):
+                self.table[address].taken_count += 1
+            self.table[address].total_count += 1
+        
+        self.table = self.get_classifications()
+        
+        return super().simulate(execution)
