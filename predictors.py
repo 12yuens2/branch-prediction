@@ -59,6 +59,14 @@ class TwoBitCounter():
         self.prediction = Branch.NOT_TAKEN
         self.history_bits = (0, 0)
         
+    def predict_correct(self, step):
+        prediction = self.prediction
+        
+        prediction_correct = prediction == step.branch
+        self.update(prediction_correct)
+        
+        return prediction_correct
+        
     def update(self, prediction_correct):
         self.update_bits(prediction_correct)
         
@@ -86,15 +94,10 @@ class TwoBitPredictor(Predictor):
     def predict_correct(self, step):
         address = self.translate_address(step.address, self.table_bits)
         counter = self.table[address]
-        prediction = counter.prediction
         
-        prediction_correct = prediction == step.branch
-        counter.update(prediction_correct)
-        
-        return prediction_correct
+        return counter.predict_correct(step)
 
 
-    
 class CorrelatingCounter():
     def __init__(self, register_bits):
         self.two_bit_counters = [TwoBitCounter() for i in range(2 ** register_bits)]
@@ -157,14 +160,10 @@ class GsharePredictor(Predictor):
     def predict_correct(self, step):
         address = self.translate_address(step.address, self.table_bits)
         counter = self.get_inner_predictor(address)
-        prediction = counter.prediction
-        
-        prediction_correct = prediction == step.branch
-        counter.update(prediction_correct)
         
         self.update_register(step.branch == Branch.TAKEN)
         
-        return prediction_correct
+        return counter.predict_correct(step)
     
     def get_inner_predictor(self, address):
         index = address ^ self.shift_register
@@ -178,4 +177,47 @@ class GsharePredictor(Predictor):
 
     def simulate(self, execution):
         self.__init__(self.table_bits, self.register_bits)
+        return super().simulate(execution)
+
+    
+class ProfiledPredictor(Predictor):
+    def __init__(self, table_bits):
+        counters = enumerate([TakenCount() for i in range(2 ** table_bits)])
+        self.table = {address: count for address, count in counters}
+        self.table_bits = table_bits
+        
+        self.mask = 2**table_bits - 1
+        self.classifications = {}
+        
+    def predict_correct(self, step):
+        address = self.translate_address(step.address, self.table_bits)
+        strategy = self.table[address]
+        
+        return strategy.predict_correct(step)
+        
+    def get_classifications(self):
+        classifications = {}
+        for address, count in self.table.items():
+            if (count.total_count > 0):
+                percentage_taken = count.taken_count/float(count.total_count)
+                if percentage_taken > 0.95:
+                    classifications[address] = AlwaysTakenPredictor()
+                elif percentage_taken < 0.05:
+                    classifications[address] = AlwaysNotTakenPredictor()
+                else:
+                    classifications[address] = TwoBitCounter()
+                
+        return classifications
+    
+    def simulate(self, execution):
+        self.__init__(self.table_bits)
+        
+        for step in execution: 
+            address = int(step.address) & self.mask
+            if (step.branch == Branch.TAKEN):
+                self.table[address].taken_count += 1
+            self.table[address].total_count += 1
+        
+        self.table = self.get_classifications()
+        
         return super().simulate(execution)
