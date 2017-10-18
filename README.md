@@ -31,3 +31,6 @@ Branch prediction simulation and experiments
 
 ### comparison
 - get averages to plot 'best' version of predictor strategies together to compare
+
+## conclusion
+- cost of branch prediction -> hardware and cost of prediction
