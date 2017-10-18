@@ -147,6 +147,8 @@ class CorrelatingPredictor(Predictor):
             
 class GsharePredictor(Predictor):
     def __init__(self, table_bits, register_bits):
+        if register_bits > table_bits:
+            register_bits = table_bits
         
         # Create a TwoBitCounter for each entry in the table
         counters = enumerate([TwoBitCounter() for i in range(2 ** table_bits)])
