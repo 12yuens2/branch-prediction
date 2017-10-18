@@ -179,6 +179,11 @@ class GsharePredictor(Predictor):
         self.__init__(self.table_bits, self.register_bits)
         return super().simulate(execution)
 
+
+class TakenCount():
+    def __init__(self):
+        self.taken_count = 0
+        self.total_count = 0
     
 class ProfiledPredictor(Predictor):
     def __init__(self, table_bits):
