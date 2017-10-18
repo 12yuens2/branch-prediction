@@ -1,3 +1,5 @@
+import numpy as np
+
 from matplotlib import pyplot as plt
 from predictors import *
 from benchmarks import *
@@ -36,4 +38,25 @@ def plot_graph(title, data, ylabel="Prediction rate", xlabel="Predictor table si
     plt.legend(loc="lower right")
     plt.ylim(top=100)
     plt.grid()
+    return plt.axes()
+
+def plot_bargraph(title, data_twobit, data_correlating, data_gshare, data_profile):
+    num_traces = 7
+
+    plt.figure(figsize=(14,9))
+    index = np.arange(num_traces)
+    bar_width = 0.2
+
+    plt.bar(index, data_twobit, bar_width, label="Two bit predictor", color="b")
+    plt.bar(index + bar_width, data_correlating, bar_width, label="Correlating predictor", color="g")
+    plt.bar(index + 2*bar_width, data_gshare, bar_width, label="Gshare predictor", color="r")
+    plt.bar(index + 3*bar_width, data_profile, bar_width, label="Profiled predictor", color="y")
+    
+    plt.xticks(index + 2*bar_width, ("Echo", "FFT", "SOR", "MonteCarlo", "Loop", "Conditional", "Bubble Sort"))
+    plt.ylabel("Prediction rate")
+    plt.xlabel("Benchmark programs")
+    
+    plt.legend(loc=(1,0.5))
+    plt.grid()
+    
     return plt.axes()
