@@ -55,7 +55,8 @@ def plot_bargraph(title, data_twobit, data_correlating, data_gshare, data_profil
     plt.xticks(index + 2*bar_width, ("Echo", "FFT", "SOR", "MonteCarlo", "Loop", "Conditional", "Bubble Sort"))
     plt.ylabel("Prediction rate")
     plt.xlabel("Benchmark programs")
-    
+
+    plt.ylim(86, 100)
     plt.legend(loc=(1,0.5))
     plt.grid()
     
